@@ -1,4 +1,6 @@
-function [Qex,Qkarst,Qmatrix,Qconduit,QexcessK,hK,hK_conduit] = gwK_riv_orihead(hK_ini,hK_conduit_ini,rech_matrix,rech_conduit,h_riv_ini,gridK_info,sprriv_info,river_info_one,S,nK)
+function [Qex,Qkarst,Qmatrix,Qconduit,QexcessK,hK,hK_conduit] = gwK_head(hK_ini, ...
+    hK_conduit_ini,rech_matrix,rech_conduit,h_riv_ini,gridK_info,sprriv_info, ...
+    river_info_one,S,nK)
 %update the storage of karst grids and calculate karst spring discharge and
 %the exchange between karst aquifer and the river
 
@@ -71,7 +73,6 @@ options=odeset('reltol',1e-4,'abstol',1e-4,'NonNegative',1,'maxstep',dt_out);
 h_sprriv_ini = zeros(n_sprriv,1);
 h_ini = [hK_ini-hK_bot;h_sprriv_ini;h_riv_ini];
 
-% cell length test
 l_k = ones(nK,1)*2500;% m 
 w_k_l = ones(nK,1)*5000; %m
 w_k_t = w_k_l;
@@ -82,7 +83,6 @@ w_k_r = w_k_l;
 % only calculate one day, since the interaction between river bed and
 % aquifer (corresponding cell) will be updated every time step
 % h_all is head above the bottom of aquifer and river bottom
-% [h_all] = myfun(hK_ini,hK_conduit_ini,rech_matrix,rech_conduit,h_riv_ini,gridK_info,sprriv_info,river_info_one,S,nK);
 [~,h_all] = ode45(@ode_gw_riv,0:0.5:1,h_ini,options);  
 haboveK = h_all(end,1:nK)';
 hK = haboveK+hK_bot;
@@ -160,7 +160,7 @@ QexcessK = (hKover+ habovesurK).*ne_K .* A_gridK/86400; % m3/s
 hK_conduit = max(0,hK_conduit-k_C .* hK_conduit);
 
 % calculate separation factor for downstream cells
-[Qcond] = Qconduit_redis_ori(Qcon,grid_flowdir,Qdown_fsep,bnd_grid_ind);
+[Qcond] = Qconduit_redis(Qcon,grid_flowdir,Qdown_fsep,bnd_grid_ind);
 Qconduit = Qcond(bnd_ind_sprriv);
 
 % distribute Q in the conduit that does not flow to sprriv, check within
